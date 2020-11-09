@@ -1,0 +1,16 @@
+*.js
+!jest.config.js
+*.d.ts
+node_modules
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+
+# Parcel default cache directory
+.parcel-cache
+
+lib/lambda/write-cloudtrail-to-es/*
+!lib/lambda/write-cloudtrail-to-es/app.py
+!lib/lambda/write-cloudtrail-to-es/requirements.txt
+!lib/lambda/write-cloudtrail-to-es/.python-version
