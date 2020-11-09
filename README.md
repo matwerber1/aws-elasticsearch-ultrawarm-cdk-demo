@@ -5,7 +5,7 @@ This is a CDK project to automate the creation of a basic Amazon Elasticsearch c
 ## What you get
 
 1. New VPC (defaults to 10.5.0.0/16) with two public and private subnets
-2. Elasticsearch cluster with three master nodes, two data nodes, and two UltraWarm nodes
+2. Elasticsearch cluster with three master nodes, two data nodes, and two UltraWarm nodes. Yes, this is a lot of nodes for a test, but UltraWarm is only available in clusters with three master nodes and two data nodes, and UltraWarm requires a minimum of two warm nodes.
 3. Elasticsearch cluster runs in a private subnet, but has a security group that allows all inbound traffic (i.e. anything inside of or connected to your VPC)
 4. CloudTrail that logs all management and global events in all regions, as well as **all** S3 object-level events (aka "data events") to CloudWatch Logs. Note - **YOU SHOULD DISABLE THE S3 data events in the CDK template** if you have S3 buckets with high traffic, as otherwise, this will generate a lot of data and cost.
 5. CloudWatch Logs subscription that sends CloudTrail events to a Lambda function that then writes them to your Elasticsearch cluster. 
