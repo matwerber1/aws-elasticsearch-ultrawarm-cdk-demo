@@ -10,6 +10,7 @@ import * as logs from '@aws-cdk/aws-logs';
 import * as lambdaEventSources from '@aws-cdk/aws-lambda-event-sources';
 import * as logDestinations from '@aws-cdk/aws-logs-destinations';
 import { FilterPattern } from '@aws-cdk/aws-logs';
+import { GatewayVpcEndpointAwsService } from '@aws-cdk/aws-ec2';
 
 export class AwsElasticsearchDemoStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -20,7 +21,7 @@ export class AwsElasticsearchDemoStack extends cdk.Stack {
     const ACCOUNT = AwsElasticsearchDemoStack.of(this).account;
     const REGION =  AwsElasticsearchDemoStack.of(this).region
 
-    // Create a brand new VPC
+    // Create a brand new VPC with two public and private subnets (though our cluster will only use one private subnets)
     const vpc = new ec2.Vpc(this, 'VPC', {
       cidr: VPC_CIDR,
       maxAzs: 2,
@@ -39,6 +40,11 @@ export class AwsElasticsearchDemoStack extends cdk.Stack {
       ]
     });
 
+    // Add an S3 VPC Endpoint
+    vpc.addGatewayEndpoint('s3-endpoint', {
+      service: ec2.GatewayVpcEndpointAwsService.S3,
+    });
+
     // Tag everything created by the VPC construct with the name es-demo, except for the subnets: 
     Tags.of(vpc).add('Name', 'es-demo', {
       excludeResourceTypes: ['AWS::EC2::Subnet']
@@ -52,12 +58,8 @@ export class AwsElasticsearchDemoStack extends cdk.Stack {
     });
 
     demoSecurityGroup.addIngressRule(ec2.Peer.ipv4(vpc.vpcCidrBlock), ec2.Port.allTraffic());
-    demoSecurityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.allTraffic());
+    //demoSecurityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.allTraffic()); 
     
-    const selection = vpc.selectSubnets({
-      subnetType: ec2.SubnetType.PRIVATE
-    });
-
     const slowSearchLogGroup = new logs.LogGroup(this, 'EsDemoSlowSearchLogGroup', {
       logGroupName: 'es-demo-slow-search-logs',
       retention: logs.RetentionDays.ONE_WEEK,
@@ -81,18 +83,18 @@ export class AwsElasticsearchDemoStack extends cdk.Stack {
       version: es.ElasticsearchVersion.V7_7,
       domainName: DOMAIN_NAME,
       capacity: {
-          masterNodes: 3,
-          dataNodes: 2,
-          dataNodeInstanceType: 'm5.large.elasticsearch',
-          masterNodeInstanceType: 't3.medium.elasticsearch'
+          masterNodes: 3,   // allowed values are 3 or 5; master nodes are required for UltraWarm
+          dataNodes: 1,
+          dataNodeInstanceType: 'm5.large.elasticsearch',   // T2/T3 instance types are not supported for data nodes that use UltraWarm 
+          masterNodeInstanceType: 't3.small.elasticsearch'    
 
       },
       ebs: {
           volumeSize: 50
       },
-      zoneAwareness: {
-          availabilityZoneCount: 2
-      },
+      //zoneAwareness: {                    // You could use this if you wanted a multi-AZ deployment....
+      //    availabilityZoneCount: 2
+      //},
       logging: {
           slowSearchLogEnabled: true,
           appLogEnabled: true,
@@ -105,9 +107,11 @@ export class AwsElasticsearchDemoStack extends cdk.Stack {
         securityGroups: [
           demoSecurityGroup
         ],
-        subnets: vpc.privateSubnets
+        subnets: [vpc.privateSubnets[0]]      // Since we're only deploying in one AZ, we just pick the first of the two subnets that are created for our cluster
+        
       },
-      accessPolicies: [
+
+      accessPolicies: [                     // Wide-open policy that allows any resource within / connected to our VPC to access the cluster
         new iam.PolicyStatement({
           actions: ["es:*"],
           principals: [
@@ -141,7 +145,7 @@ export class AwsElasticsearchDemoStack extends cdk.Stack {
     });
 
     // Log all S3 object-level events:
-    myTrail.logAllS3DataEvents();
+    //myTrail.logAllS3DataEvents();       // This can get expensive if you have a lot of S3 activity. Disabling, for now...
 
     // Create a Lambda function that will receive CloudTrail logs from a CloudWatch logs group subscription and write to Elasticsearch:
     const lambdaFunction = new lambda.Function(this, 'EsDemoWriteCloudTrailToIndex', {
