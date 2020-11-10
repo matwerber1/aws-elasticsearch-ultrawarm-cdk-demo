@@ -84,17 +84,17 @@ export class AwsElasticsearchDemoStack extends cdk.Stack {
       domainName: DOMAIN_NAME,
       capacity: {
           masterNodes: 3,   // allowed values are 3 or 5; master nodes are required for UltraWarm
-          dataNodes: 1,
+          dataNodes: 2,
           dataNodeInstanceType: 'm5.large.elasticsearch',   // T2/T3 instance types are not supported for data nodes that use UltraWarm 
-          masterNodeInstanceType: 't3.small.elasticsearch'    
+          masterNodeInstanceType: 't3.medium.elasticsearch'    
 
       },
       ebs: {
           volumeSize: 50
       },
-      //zoneAwareness: {                    // You could use this if you wanted a multi-AZ deployment....
-      //    availabilityZoneCount: 2
-      //},
+      zoneAwareness: {              
+          availabilityZoneCount: 2
+      },
       logging: {
           slowSearchLogEnabled: true,
           appLogEnabled: true,
@@ -107,8 +107,7 @@ export class AwsElasticsearchDemoStack extends cdk.Stack {
         securityGroups: [
           demoSecurityGroup
         ],
-        subnets: [vpc.privateSubnets[0]]      // Since we're only deploying in one AZ, we just pick the first of the two subnets that are created for our cluster
-        
+        subnets: vpc.privateSubnets      
       },
 
       accessPolicies: [                     // Wide-open policy that allows any resource within / connected to our VPC to access the cluster

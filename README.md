@@ -14,7 +14,7 @@ This project deploys:
 
 1. **VPC** a new VPC with a CIDR of 10.5.0.0/16 with two private and public subnets, one NAT Gateway, and an S3 VPC Endpoint.
 
-1. **Elasticsearch cluster** - a new Elasticsearch cluster with three t3.small master nodes, one m5.large data node, and two ultrawarm.medium nodes (See Note 1). The one data node has a 50 GB storage volume. 
+1. **Elasticsearch cluster** - a new Elasticsearch cluster with three t3.medium master nodes, two m5.large data nodes, and two ultrawarm.medium nodes (See Note 1). The one data node has a 50 GB storage volume. 
 
 1. **CloudTrail** - configures a new trail to send all regional and global management event logs to a CloudWatch Logs group
 
@@ -22,18 +22,18 @@ This project deploys:
 
 1. **Lambda function** - receives CloudWatch Logs via a subscription filter and uses the Elasticsearch PUT/ API to write the logs to an index named `cloudtrail-YYYYMMDD`, where `YYYYMMDD` is the event timestamp per the logs. 
 
-**Note 1** - Ultrawarm can only be used when a cluster has master nodes (3 = minimum) and at least two ultrawarm nodes; also, it does not support data nodes of the T2/T3 type (at this time). The lowest cost data node outside of the T2/T3 nodes is the m5.large; similarly, this project deploys the lowest cost master and ultrawarm nodes available at the time of this writing (Nov 2020).
+**Note 1** - Ultrawarm can only be used when a cluster has master nodes (3 = minimum) and at least two ultrawarm nodes; also, it does not support data nodes of the T2/T3 type (at this time). The lowest cost data node outside of the T2/T3 nodes is the m5.large.
 
 ## Cost
 
-The majority of cost will come from the Elasticsearch clsuter itself. For reference, cost in us-west-2 at time of writing is: 
+The majority of cost will come from the Elasticsearch cluster itself. For reference, cost in us-west-2 at time of writing is: 
 
 ```
-  (three t3.small.elasticsearch master nodes) * ($0.036 / hour) * (744 hours / mo) ~= $ 80 / mo
-+ (one m5.large.elasticsearch data node)      * ($0.142 / hour) * (744 hours / mo  ~= $106 / mo
-+ (two ultrawarm.medium nodes)                * ($0.238 / hour) * (744 hours / mo) ~= $354 / mo
+  (three t3.medium.elasticsearch master nodes) * ($0.072 / hour) * (744 hours / mo) ~= $160 / mo
++ (two m5.large.elasticsearch data nodes)      * ($0.142 / hour) * (744 hours / mo  ~= $212 / mo
++ (two ultrawarm.medium nodes)                 * ($0.238 / hour) * (744 hours / mo) ~= $354 / mo
  ------------------------------------------------------------------------------------------------
-                                                                                   ~= $540 / month ($17 / day)
+                                                                                   ~= $726 / month ($23 / day)
  ```
 
 Keep in mind, this estimate does not include the cost of CloudTrail, CloudWatch Logs, or the Lambda function... but they should be far lower. I've configured the CloudWatch log groups to only retain logs for one week to help keep log storage low. 
