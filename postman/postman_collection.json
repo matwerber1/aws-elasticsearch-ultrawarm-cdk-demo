@@ -1,0 +1,457 @@
+{
+	"info": {
+		"_postman_id": "5e6f99c3-2553-4ecd-a86e-bd9c15aae150",
+		"name": "ElasticSearch",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "ultrawarm",
+			"item": [
+				{
+					"name": "Index Document",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"sensorId\": 40,\n    \"timestamp\": \"2020-07-24T09:44:49+03:00\",\n    \"currentTemperature\": 30,\n    \"status\": \"WARN\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/my_index/_doc",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"my_index",
+								"_doc"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9200/my_index/_search?q=sensorId:40",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"my_index",
+								"_search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "sensorId:40"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "migrate to warm",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9200/_ultrawarm/migration/my_index/_warm",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"_ultrawarm",
+								"migration",
+								"my_index",
+								"_warm"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "show warm indices",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:9200/_warm",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"_warm"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "migrate to hot",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9200/_ultrawarm/migration/my_index/_hot",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"_ultrawarm",
+								"migration",
+								"my_index",
+								"_hot"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "management",
+			"item": [
+				{
+					"name": "show nodes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9200/_cat/nodes?v",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"_cat",
+								"nodes"
+							],
+							"query": [
+								{
+									"key": "v",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "show shards allocation",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:9200/_cat/allocation?v",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"_cat",
+								"allocation"
+							],
+							"query": [
+								{
+									"key": "v",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "show indices",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9200/_cat/indices?v",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"_cat",
+								"indices"
+							],
+							"query": [
+								{
+									"key": "v",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "template: myindex",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"index_patterns\": [\n    \"my_index*\"\n  ],\n  \"settings\": {\n    \"number_of_shards\": 1,\n    \"number_of_replicas\": 0\n}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/_template/my_index_template\n",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"_template",
+								"my_index_template\n"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Search",
+			"item": [
+				{
+					"name": "Search_Agg",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"from\": 0,\n  \"size\": 0,\n  \"query\": {\n    \"bool\": {\n      \"filter\": [\n        {\n          \"bool\": {\n            \"must\": [\n              {\n                \"range\": {\n                  \"sensorId\": {\n                    \"from\": 1,\n                    \"to\": 100,\n                    \"include_lower\": true,\n                    \"include_upper\": true,\n                    \"boost\": 1\n                  }\n                }\n              }\n            ],\n            \"adjust_pure_negative\": true,\n            \"boost\": 1\n          }\n        }\n      ],\n      \"adjust_pure_negative\": true,\n      \"boost\": 1\n    }\n  },\n  \"_source\": {\n    \"includes\": [\n      \"sensorId\",\n      \"MIN\",\n      \"AVG\",\n      \"MAX\"\n    ],\n    \"excludes\": []\n  },\n  \"stored_fields\": \"sensorId\",\n  \"aggregations\": {\n    \"sensorId\": {\n      \"terms\": {\n        \"field\": \"sensorId\",\n        \"size\": 200,\n        \"min_doc_count\": 1,\n        \"shard_min_doc_count\": 0,\n        \"show_term_doc_count_error\": false,\n        \"order\": {\n          \"_key\": \"asc\"\n        }\n      },\n      \"aggregations\": {\n        \"MIN_0\": {\n          \"min\": {\n            \"field\": \"currentTemperature\"\n          }\n        },\n        \"AVG_1\": {\n          \"avg\": {\n            \"field\": \"currentTemperature\"\n          }\n        },\n        \"MAX_2\": {\n          \"max\": {\n            \"field\": \"currentTemperature\"\n          }\n        }\n      }\n    }\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9200/firehose_ingested_events-2020-08-*-*/_search",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9200",
+							"path": [
+								"firehose_ingested_events-2020-08-*-*",
+								"_search"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "delete",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:9200/my_index",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9200",
+					"path": [
+						"my_index"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:9200/_template",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"index_patterns\": [\n    \"firehose_ingested_events-*\"\n  ],\n  \"settings\": {\n    \"number_of_shards\": 1,\n    \"aliases\": {\n      \"firehose_ingested_sensor_events\": { }\n    },\n    \"opendistro.index_state_management.policy_id\": \"move_to_ultrawarm_then_delete\",\n    \"opendistro.index_state_management.rollover_alias\": \"firehose_ingested_sensor_events\"\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:9200/_template/sensors_template\n",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9200",
+					"path": [
+						"_template",
+						"sensors_template\n"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:9200/_aliases",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"actions\" : [\n    { \"add\" : { \"index\" : \"firehose_ingested_events-2020-07-25-12\", \"alias\" : \"firehose_ingested_sensor_events\" } }\n  ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:9200/_aliases",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9200",
+					"path": [
+						"_aliases"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "show all indices",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:9200/_hot",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9200",
+					"path": [
+						"_hot"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
