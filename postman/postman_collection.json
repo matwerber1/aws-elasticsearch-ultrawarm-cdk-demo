@@ -1,51 +1,15 @@
 {
 	"info": {
-		"_postman_id": "5e6f99c3-2553-4ecd-a86e-bd9c15aae150",
+		"_postman_id": "cd331bd9-5f40-4a77-898f-47d584bab0ea",
 		"name": "ElasticSearch",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "ultrawarm",
+			"name": "Informational APIs",
 			"item": [
 				{
-					"name": "Index Document",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"sensorId\": 40,\n    \"timestamp\": \"2020-07-24T09:44:49+03:00\",\n    \"currentTemperature\": 30,\n    \"status\": \"WARN\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:9200/my_index/_doc",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "9200",
-							"path": [
-								"my_index",
-								"_doc"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Search",
+					"name": "Get Hot Indexes [Detail]",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -57,111 +21,43 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:9200/my_index/_search?q=sensorId:40",
-							"protocol": "http",
+							"raw": "{{endpoint}}/_hot",
 							"host": [
-								"localhost"
+								"{{endpoint}}"
 							],
-							"port": "9200",
 							"path": [
-								"my_index",
-								"_search"
-							],
-							"query": [
-								{
-									"key": "q",
-									"value": "sensorId:40"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "migrate to warm",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:9200/_ultrawarm/migration/my_index/_warm",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "9200",
-							"path": [
-								"_ultrawarm",
-								"migration",
-								"my_index",
-								"_warm"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "show warm indices",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:9200/_warm",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "9200",
-							"path": [
-								"_warm"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "migrate to hot",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:9200/_ultrawarm/migration/my_index/_hot",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "9200",
-							"path": [
-								"_ultrawarm",
-								"migration",
-								"my_index",
 								"_hot"
 							]
 						}
 					},
 					"response": []
-				}
-			],
-			"protocolProfileBehavior": {}
-		},
-		{
-			"name": "management",
-			"item": [
+				},
 				{
-					"name": "show nodes",
+					"name": "Get Warm Indexes [Detail]",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{endpoint}}/_warm",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"_warm"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Indices [List]",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -173,71 +69,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:9200/_cat/nodes?v",
-							"protocol": "http",
+							"raw": "{{endpoint}}/_cat/indices?v",
 							"host": [
-								"localhost"
+								"{{endpoint}}"
 							],
-							"port": "9200",
-							"path": [
-								"_cat",
-								"nodes"
-							],
-							"query": [
-								{
-									"key": "v",
-									"value": null
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "show shards allocation",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:9200/_cat/allocation?v",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "9200",
-							"path": [
-								"_cat",
-								"allocation"
-							],
-							"query": [
-								{
-									"key": "v",
-									"value": null
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "show indices",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:9200/_cat/indices?v",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "9200",
 							"path": [
 								"_cat",
 								"indices"
@@ -253,20 +88,40 @@
 					"response": []
 				},
 				{
-					"name": "template: myindex",
+					"name": "Get Shard Allocation",
 					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/_cat/allocation?v",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"_cat",
+								"allocation"
+							],
+							"query": [
+								{
+									"key": "v",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Index Policies",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"index_patterns\": [\n    \"my_index*\"\n  ],\n  \"settings\": {\n    \"number_of_shards\": 1,\n    \"number_of_replicas\": 0\n}\n}",
+							"raw": "{\n  \"query\": {\n    \"exists\": {\n      \"field\": \"policy\"\n    }\n  }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -274,31 +129,75 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:9200/_template/my_index_template\n",
-							"protocol": "http",
+							"raw": "{{endpoint}}/.opendistro-ism-config/_search",
 							"host": [
-								"localhost"
+								"{{endpoint}}"
 							],
-							"port": "9200",
 							"path": [
-								"_template",
-								"my_index_template\n"
+								".opendistro-ism-config",
+								"_search"
 							]
 						}
 					},
 					"response": []
-				}
-			],
-			"protocolProfileBehavior": {}
-		},
-		{
-			"name": "Search",
-			"item": [
+				},
 				{
-					"name": "Search_Agg",
+					"name": "Get Index Templates [List]",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/_cat/templates/*?v",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"_cat",
+								"templates",
+								"*"
+							],
+							"query": [
+								{
+									"key": "v",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Index Templates [Detail]",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/_template/*",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"_template",
+								"*"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Node Info",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -309,9 +208,61 @@
 								"type": "text"
 							}
 						],
+						"url": {
+							"raw": "{{endpoint}}/_cat/nodes?v",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"_cat",
+								"nodes"
+							],
+							"query": [
+								{
+									"key": "v",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "9e8baba5-506d-498c-8171-6c51641db787",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "aa672fcd-8a44-4751-9641-2460836954b3",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "CloudTrail Demo APIs",
+			"item": [
+				{
+					"name": "1. Create Cloudtrail Index Policy",
+					"request": {
+						"method": "PUT",
+						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"from\": 0,\n  \"size\": 0,\n  \"query\": {\n    \"bool\": {\n      \"filter\": [\n        {\n          \"bool\": {\n            \"must\": [\n              {\n                \"range\": {\n                  \"sensorId\": {\n                    \"from\": 1,\n                    \"to\": 100,\n                    \"include_lower\": true,\n                    \"include_upper\": true,\n                    \"boost\": 1\n                  }\n                }\n              }\n            ],\n            \"adjust_pure_negative\": true,\n            \"boost\": 1\n          }\n        }\n      ],\n      \"adjust_pure_negative\": true,\n      \"boost\": 1\n    }\n  },\n  \"_source\": {\n    \"includes\": [\n      \"sensorId\",\n      \"MIN\",\n      \"AVG\",\n      \"MAX\"\n    ],\n    \"excludes\": []\n  },\n  \"stored_fields\": \"sensorId\",\n  \"aggregations\": {\n    \"sensorId\": {\n      \"terms\": {\n        \"field\": \"sensorId\",\n        \"size\": 200,\n        \"min_doc_count\": 1,\n        \"shard_min_doc_count\": 0,\n        \"show_term_doc_count_error\": false,\n        \"order\": {\n          \"_key\": \"asc\"\n        }\n      },\n      \"aggregations\": {\n        \"MIN_0\": {\n          \"min\": {\n            \"field\": \"currentTemperature\"\n          }\n        },\n        \"AVG_1\": {\n          \"avg\": {\n            \"field\": \"currentTemperature\"\n          }\n        },\n        \"MAX_2\": {\n          \"max\": {\n            \"field\": \"currentTemperature\"\n          }\n        }\n      }\n    }\n  }\n}",
+							"raw": "{\n  \"policy\": {\n    \"description\": \"ingesting logs\",\n    \"default_state\": \"ingest\",\n    \"states\": [\n      {\n        \"name\": \"ingest\",\n        \"actions\": [\n          {\n            \"rollover\": {\n              \"min_doc_count\": 5\n            }\n          }\n        ],\n        \"transitions\": [\n          {\n            \"state_name\": \"search\"\n          }\n        ]\n      },\n      {\n        \"name\": \"search\",\n        \"actions\": [],\n        \"transitions\": [\n          {\n            \"state_name\": \"delete\",\n            \"conditions\": {\n              \"min_index_age\": \"5m\"\n            }\n          }\n        ]\n      },\n      {\n        \"name\": \"delete\",\n        \"actions\": [\n          {\n            \"delete\": {}\n          }\n        ],\n        \"transitions\": []\n      }\n    ]\n  }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -319,15 +270,349 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:9200/firehose_ingested_events-2020-08-*-*/_search",
-							"protocol": "http",
+							"raw": "{{endpoint}}/_opendistro/_ism/policies/hot_to_warm_policy",
 							"host": [
-								"localhost"
+								"{{endpoint}}"
 							],
-							"port": "9200",
 							"path": [
-								"firehose_ingested_events-2020-08-*-*",
+								"_opendistro",
+								"_ism",
+								"policies",
+								"hot_to_warm_policy"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. CreateCloudtrail Index Template",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"index_patterns\": [ \"cloudtrail-*\" ],\n  \"aliases\": {\n      \"cloudtrail\": {}\n    },\n    \"settings\": {\n      \"number_of_shards\": 1,\n      \"number_of_replicas\": 1,\n      \"opendistro.index_state_management.policy_id\": \"hot_to_warm_policy\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/_template/cloudtrail_template",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"_template",
+								"cloudtrail_template"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "fddc99af-f5a4-42d0-8950-b54d7d70c532",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "adf4a0e7-6c2e-4541-8de2-c563eb636683",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Simple Demo APIs",
+			"item": [
+				{
+					"name": "01. Put Simple Index Template",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"index_patterns\": [\n    \"simple_index*\"\n  ],\n  \"settings\": {\n    \"number_of_shards\": 1,\n    \"number_of_replicas\": 0\n}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/_template/simple_index_template",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"_template",
+								"simple_index_template"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "02. Post document to Simple Index",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"sensorId\": 40,\n    \"timestamp\": \"2020-07-24T09:44:49+03:00\",\n    \"currentTemperature\": 30,\n    \"status\": \"WARN\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{endpoint}}/simple_index/_doc",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"simple_index",
+								"_doc"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "03. List Hot Indices",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{endpoint}}/_cat/indices/_hot?v",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"_cat",
+								"indices",
+								"_hot"
+							],
+							"query": [
+								{
+									"key": "v",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "04. Search for document in Simple Index",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{endpoint}}/simple_index/_search?q=sensorId:40",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"simple_index",
 								"_search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "sensorId:40"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "05. Migrate simple index to warm",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{endpoint}}/_ultrawarm/migration/simple_index/_warm",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"_ultrawarm",
+								"migration",
+								"simple_index",
+								"_warm"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "06. Get index migration status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/_ultrawarm/migration/simple_index/_status",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"_ultrawarm",
+								"migration",
+								"simple_index",
+								"_status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "07. List Warm Indices",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{endpoint}}/_cat/indices/_warm?v",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"_cat",
+								"indices",
+								"_warm"
+							],
+							"query": [
+								{
+									"key": "v",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "08. Show migration status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/_ultrawarm/migration/_status?v",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"_ultrawarm",
+								"migration",
+								"_status"
+							],
+							"query": [
+								{
+									"key": "v",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "09. Migrate simple index to hot",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{endpoint}}/_ultrawarm/migration/simple_index/_hot",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"_ultrawarm",
+								"migration",
+								"simple_index",
+								"_hot"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "10. Delete Simple Index",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{endpoint}}/simple_index",
+							"host": [
+								"{{endpoint}}"
+							],
+							"path": [
+								"simple_index"
 							]
 						}
 					},
@@ -335,122 +620,35 @@
 				}
 			],
 			"protocolProfileBehavior": {}
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "bacf0ec0-fc0d-4a21-9233-d44e422ad643",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
 		},
 		{
-			"name": "delete",
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:9200/my_index",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "9200",
-					"path": [
-						"my_index"
-					]
-				}
-			},
-			"response": []
-		},
+			"listen": "test",
+			"script": {
+				"id": "a3fd072b-6d3b-407a-8daa-6a5203a6d401",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
 		{
-			"name": "http://localhost:9200/_template",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"name": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"index_patterns\": [\n    \"firehose_ingested_events-*\"\n  ],\n  \"settings\": {\n    \"number_of_shards\": 1,\n    \"aliases\": {\n      \"firehose_ingested_sensor_events\": { }\n    },\n    \"opendistro.index_state_management.policy_id\": \"move_to_ultrawarm_then_delete\",\n    \"opendistro.index_state_management.rollover_alias\": \"firehose_ingested_sensor_events\"\n  }\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:9200/_template/sensors_template\n",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "9200",
-					"path": [
-						"_template",
-						"sensors_template\n"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "http://localhost:9200/_aliases",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"name": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"actions\" : [\n    { \"add\" : { \"index\" : \"firehose_ingested_events-2020-07-25-12\", \"alias\" : \"firehose_ingested_sensor_events\" } }\n  ]\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:9200/_aliases",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "9200",
-					"path": [
-						"_aliases"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "show all indices",
-			"request": {
-				"method": "GET",
-				"header": [
-					{
-						"key": "Content-Type",
-						"name": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"url": {
-					"raw": "http://localhost:9200/_hot",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "9200",
-					"path": [
-						"_hot"
-					]
-				}
-			},
-			"response": []
+			"id": "308a4744-f359-43e3-aef3-71cba041d894",
+			"key": "endpoint",
+			"value": "https://vpc-es-demo-obt4ctvmepzixoukwin4hrrjoq.us-west-2.es.amazonaws.com"
 		}
 	],
 	"protocolProfileBehavior": {}

@@ -85,35 +85,41 @@ You don't need to use Postman, but it makes things easier. As an alternative, yo
 
 ## Postman Queries
 
-This section summarizes the Postman queries available in this demo:
+Once you've configured Postman and imported the collection of sample queries, your Postman view should look like this: 
 
-### 01. Get Hot Indexes
+![Postman Summary](images/postman-summary.png)
 
-**Purpose:** Provides list of all hot indexes, which are those are stored in hot (local EBS or NVMe) storage on your EC2 data nodes. These nodes may be written to.
+### Informational APIs
 
-**API:** `GET {{endpoint}}/_hot`
+The APIs here are just general, informational APIs that provide you information such as a list of the indexes, templates, shards, and related information.
 
-### 02. Get Warm Indexes
+### CloudTrail Demo APIs
 
-**Purpose:** Provides list of all warm indexes, which are those that are stored by UltraWarm. By default, the data resides in Amazon S3. If the data is queried, it is brought from S3 into a warm cache in your UltraWarm nodes for faster subsequent retrieval. 
+This folder contains two example APIs that you should run sequentially. 
 
-**API:** `GET {{endpoint}}/_warm`
+The API named `1. Create Cloudtrail Index Policy` creates an index policy `hot_to_warm_policy` that initially puts indexes in hot storage, moves them to warm storage after six hours, then deletes the index after 90 days.
 
-### 03. Get Index Summary
+The API named `2. CreateCloudtrail Index Template` creates a template that automatically applies the `hot_to_warm_policy` to any newly-created index whose name begins with `cloudtrail-*`. 
 
-**Purpose:** Provides summary info about your indexes
-**API:** `GET {{endpoint}}/_cat/indices?v`
+This CDK project deploys a Lambda that streams CloudTrail logs to indices with a naming convention of `cloudtrail-YYYYMMDD`, where `YYYYMMDD` is the date of the log event. This means that each day will have its index, which is a common pattern for log analysis in Elasticsearch.
 
-**Example Response:**
+### Simple Demo APIs
 
-```
-health status index                          uuid                   pri rep docs.count docs.deleted store.size pri.store.size
-green  open   cloudtrail-20201109            QlmVqSpPQ32nu6J-ZDre8Q   5   1      20811          541     65.7mb         32.8mb
-green  open   .opendistro-job-scheduler-lock AzvJ9HywQmOL4gNlbYPJ3Q   5   1          1            1     34.7kb         17.3kb
-green  open   .kibana_1                      ryovaSpsTFGDm6gC92knJg   1   1         58           39    152.6kb         77.7kb
-```
+This is a collection of APIs that again should be run in order. 
 
-### Command...
+High level, you will: 
+1. First create an index template for any index whose name starts with `simple_index`; this template merely sets the index primary shard count to 1 and replica count to 0. 
 
-**Purpose:**
-**API:**
+2. Post a dummy document to an index named `simple_index` that has mock IoT sensor data, including the field `"sensorId": 40`. Note that since this is the first time we've posted to the simple_index, the index will automatically be created and our index template settings will be applied. Since we haven't specified otherwise, this new index will by default be created as a hot index. You can verify this by running the "List Hot Indices" API.
+
+3. You should now run the sSearch for document" API before moving forward. Since your index is initially in hot storage, you should see a relatively low response time (e.g. ~40ms) in Postman. Run the API several times and notice that the response time stays relatively low. 
+
+4. You then use the migrate API to move the index to warm storage. Since our index only has one item, this migration will happen very quickly. There is a sample query to view migration status, but its likely that the migration will complete before you even have a chance to run it.
+
+5. After initiating the migration API, run the "List Warm Indices" API every few seconds until you see that the `simple_index` has moved to warm storage. 
+
+6. Run the "Search for document" API again. The very first time you run it after the index is in warm storage, you should see a much higher retrieval time than before (e.g. a couple hundred ms). This is because the UltraWarm node must retrieve the document from Amazon S3.
+
+7. Run the "Search for document" API once more. Now, you should see that the retrieval time is much lower, roughly the same performance as when the index was in hot storage. This is because your initial slower query pulled the data into UltraWarm and it is now cached by the UltraWarm node. Subsequent calls do not need to query S3 until the item expires from the cache. 
+
+8. Additional APIs also allow you to migrate the index back to hot storage or delete the index to start from the beginning. 
