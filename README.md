@@ -64,7 +64,7 @@ These instructions are my quick notes to myself. Their not in depth yet and assu
 
 The file `postman/postman_collection.json` is an importable collection of [Postman](https://www.postman.com/) queries that you can use to test your Elasticsearch cluster.
 
-You don't need to use Postman, but it makes things easier. As an alternative, you could always execute the raw API commands directly from an EC2 or Cloud9 instance in your VPC... but I'll assume you're using Postman.
+You don't need to use Postman, but it makes things easier. As an alternative, you could always execute the API commands directly from Kibana, an EC2 or Cloud9 instance, etc... but I'll assume you're using Postman.
 
 ## Postman Setup
 
