@@ -262,7 +262,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"policy\": {\n    \"description\": \"ingesting logs\",\n    \"default_state\": \"ingest\",\n    \"states\": [\n      {\n        \"name\": \"ingest\",\n        \"actions\": [\n          {\n            \"rollover\": {\n              \"min_doc_count\": 5\n            }\n          }\n        ],\n        \"transitions\": [\n          {\n            \"state_name\": \"search\"\n          }\n        ]\n      },\n      {\n        \"name\": \"search\",\n        \"actions\": [],\n        \"transitions\": [\n          {\n            \"state_name\": \"delete\",\n            \"conditions\": {\n              \"min_index_age\": \"5m\"\n            }\n          }\n        ]\n      },\n      {\n        \"name\": \"delete\",\n        \"actions\": [\n          {\n            \"delete\": {}\n          }\n        ],\n        \"transitions\": []\n      }\n    ]\n  }\n}",
+							"raw": "{\n    \"policy\": {\n        \"description\": \"Demonstrate a hot-warm-delete workflow.\",\n        \"schema_version\": 1,\n        \"error_notification\": null,\n        \"default_state\": \"hot\",\n        \"states\": [\n            {\n                \"name\": \"hot\",\n                \"actions\": [],\n                \"transitions\": [\n                    {\n                        \"state_name\": \"warm\",\n                        \"conditions\": {\n                            \"min_index_age\": \"25h\"\n                        }\n                    }\n                ]\n            },\n            {\n                \"name\": \"warm\",\n                \"actions\": [\n                    {\n                        \"timeout\": \"24h\",\n                        \"retry\": {\n                            \"count\": 5,\n                            \"backoff\": \"exponential\",\n                            \"delay\": \"1h\"\n                        },\n                        \"warm_migration\": {}\n                    }\n                ],\n                \"transitions\": [\n                    {\n                        \"state_name\": \"delete\",\n                        \"conditions\": {\n                            \"min_index_age\": \"30d\"\n                        }\n                    }\n                ]\n            },\n            {\n                \"name\": \"delete\",\n                \"actions\": [\n                    {\n                        \"delete\": {}\n                    }\n                ],\n                \"transitions\": []\n            }\n        ]\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -420,14 +420,14 @@
 							}
 						],
 						"url": {
-							"raw": "{{endpoint}}/_cat/indices/_hot?v",
+							"raw": "{{endpoint}}/_cat/indices/_warm?v",
 							"host": [
 								"{{endpoint}}"
 							],
 							"path": [
 								"_cat",
 								"indices",
-								"_hot"
+								"_warm"
 							],
 							"query": [
 								{
@@ -646,7 +646,7 @@
 	],
 	"variable": [
 		{
-			"id": "308a4744-f359-43e3-aef3-71cba041d894",
+			"id": "759b8529-6c9e-40ed-aece-1dfc775225df",
 			"key": "endpoint",
 			"value": "https://vpc-es-demo-obt4ctvmepzixoukwin4hrrjoq.us-west-2.es.amazonaws.com"
 		}
