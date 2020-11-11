@@ -52,7 +52,7 @@ These instructions are my quick notes to myself. Their not in depth yet and assu
 
 1. From the project root, install Javascript dependencies for the CDK: `npm install`
 
-1. Install Python dependencies for our Lambda function:
+1. **[Important]** Install Python dependencies for our Lambda function before deploying the project:
 
     1. Navigate to `~/lib/lambda/write-cloudtrail-to-es`
     1. Use pyenv and/or virtualenv to use Python version 3.8 (in my case, 3.8.6)
