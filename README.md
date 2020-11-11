@@ -112,7 +112,7 @@ High level, you will:
 
 2. Post a dummy document to an index named `simple_index` that has mock IoT sensor data, including the field `"sensorId": 40`. Note that since this is the first time we've posted to the simple_index, the index will automatically be created and our index template settings will be applied. Since we haven't specified otherwise, this new index will by default be created as a hot index. You can verify this by running the "List Hot Indices" API.
 
-3. You should now run the sSearch for document" API before moving forward. Since your index is initially in hot storage, you should see a relatively low response time (e.g. ~40ms) in Postman. Run the API several times and notice that the response time stays relatively low. 
+3. You should now run the "Search for document" API before moving forward. Since your index is initially in hot storage, you should see a relatively low response time (e.g. ~40ms) in Postman. Run the API several times and notice that the response time stays relatively low. 
 
 4. You then use the migrate API to move the index to warm storage. Since our index only has one item, this migration will happen very quickly. There is a sample query to view migration status, but its likely that the migration will complete before you even have a chance to run it.
 
