@@ -1,6 +1,6 @@
 # Amazon Elasticsearch with UltraWarm - CDK Template
 
-This is a CDK project to automate the creation of a basic Amazon Elasticsearch cluster with UltraWarm. This is for my own learning purposes. This is a test project and certain settings do not follow best practices for production usage. 
+This is a CDK project to automate the creation of a basic Amazon Elasticsearch cluster with UltraWarm. This is a test project and certain settings do not follow best practices for production usage. 
 
 Read more about UltraWarm for Amazon Elasticsearch here:
 
@@ -12,7 +12,7 @@ Read more about UltraWarm for Amazon Elasticsearch here:
 
 This project deploys:
 
-1. **VPC** a new VPC with a CIDR of 10.5.0.0/16 with two private and public subnets, one NAT Gateway, and an S3 VPC Endpoint.
+1. **VPC** [OPTIONAL] - a new VPC with a CIDR of 10.5.0.0/16 with two private and public subnets, one NAT Gateway, and an S3 VPC Endpoint. If you already have an existing VPC, you can use that, instead.
 
 1. **Elasticsearch cluster** - a new Elasticsearch cluster with three t3.medium master nodes, two m5.large data nodes, and two ultrawarm.medium nodes (See Note 1). The one data node has a 50 GB storage volume. 
 
@@ -36,15 +36,15 @@ The majority of cost will come from the Elasticsearch cluster itself. For refere
                                                                                    ~= $726 / month ($23 / day)
  ```
 
-Keep in mind, this estimate does not include the cost of CloudTrail, CloudWatch Logs, or the Lambda function... but they should be far lower. I've configured the CloudWatch log groups to only retain logs for one week to help keep log storage low. 
+Keep in mind, this estimate does not include the cost of CloudTrail, CloudWatch Logs, or the Lambda function... but they should be far lower.
 
- ## Security
+## Security
 
- The Elasticsearch cluster is deployed in a private subnet with a security group that allows all inbound traffic from the VPC CIDR (by default, `10.5.0.0/16`). In production, you might consider stricter security controls.
+If you use this option to allow this project to deploy a new VPC, the Elasticsearch cluster is deployed in a private subnet with a security group that allows all inbound traffic. Because the subnet is private, only resources in/connected to your VPC would be able to access the cluster. In production, you might consider stricter security controls.
+
+If you choose to use your own, existing VPC, then security will be governed based on the networking configuration of the VPC/subnets that you specify. You are encouraged to use private subnets.
 
 ## Infrastructure Deployment
-
-These instructions are my quick notes to myself. Their not in depth yet and assume you know your way around the AWS CDK.
 
 1. Install and configure the AWS CLI and AWS CDK
 
@@ -57,6 +57,10 @@ These instructions are my quick notes to myself. Their not in depth yet and assu
     1. Navigate to `~/lib/lambda/write-cloudtrail-to-es`
     1. Use pyenv and/or virtualenv to use Python version 3.8 (in my case, 3.8.6)
     1. Install Python dependencies: `pip install -r requirements.txt --target .`
+
+1. Within `./bin/aws-elasticsearch-demo.ts`, modify the configuration parameters to match your desired AWS account and deployment region. 
+
+1. Within `./bin/aws-elasticsearch-demo.ts`, optionally modify the configuration parameters to either create a new VPC or use an existing VPC. If you specify an existing VPC, you will need to provide the VPC ID, two (preferably private) subnet IDs, and the route table ID(s) associated to the subnets.
 
 1. Deploy the stack: `cdk deploy`
 

@@ -14,3 +14,5 @@ lib/lambda/write-cloudtrail-to-es/*
 !lib/lambda/write-cloudtrail-to-es/app.py
 !lib/lambda/write-cloudtrail-to-es/requirements.txt
 !lib/lambda/write-cloudtrail-to-es/.python-version
+
+**copy**

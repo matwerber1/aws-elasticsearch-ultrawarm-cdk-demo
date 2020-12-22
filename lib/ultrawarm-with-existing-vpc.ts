@@ -12,73 +12,76 @@ import * as logDestinations from '@aws-cdk/aws-logs-destinations';
 import { FilterPattern } from '@aws-cdk/aws-logs';
 import { GatewayVpcEndpointAwsService } from '@aws-cdk/aws-ec2';
 
-export class AwsElasticsearchDemoStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+interface StackProps extends cdk.StackProps {
+  vpcId: string;
+  privateSubnet1Id: string;
+  privateSubnet2Id: string;
+  privateSubnet1AZ: string;
+  privateSubnet2AZ: string;
+  privateSubnet1RouteTableId: string;
+  privateSubnet2RouteTableId: string;
+}
+
+export class UltraWarmDemoWithExistingVPC extends cdk.Stack {
+  constructor(scope: cdk.Construct, id: string, props: StackProps) {
     super(scope, id, props);
 
-    const VPC_CIDR = "10.5.0.0/16";
     const DOMAIN_NAME = "es-demo";
-    const ACCOUNT = AwsElasticsearchDemoStack.of(this).account;
-    const REGION =  AwsElasticsearchDemoStack.of(this).region
+    const ACCOUNT = UltraWarmDemoWithExistingVPC.of(this).account;
+    const REGION =  UltraWarmDemoWithExistingVPC.of(this).region
 
-    // Create a brand new VPC with two public and private subnets (though our cluster will only use one private subnets)
-    const vpc = new ec2.Vpc(this, 'VPC', {
-      cidr: VPC_CIDR,
-      maxAzs: 2,
-      natGateways: 1,
-      subnetConfiguration: [
-        {
-          cidrMask: 24,
-          name: 'private',
-          subnetType: ec2.SubnetType.PRIVATE
-        },
-        {
-          cidrMask: 24,
-          name: 'public',
-          subnetType: ec2.SubnetType.PUBLIC
-        }
-      ]
+    const vpc = ec2.Vpc.fromLookup(this, 'ExistingVPC', {
+      vpcId: props.vpcId
+    });
+    
+    const privateSubnet1 = ec2.Subnet.fromSubnetAttributes(this, "PrivateSubnet1", {
+      subnetId: props.privateSubnet1Id,
+      availabilityZone: props.privateSubnet1AZ,
+      routeTableId: props.privateSubnet1RouteTableId
     });
 
-    // Add an S3 VPC Endpoint
-    vpc.addGatewayEndpoint('s3-endpoint', {
-      service: ec2.GatewayVpcEndpointAwsService.S3,
-    });
-
-    // Tag everything created by the VPC construct with the name es-demo, except for the subnets: 
-    Tags.of(vpc).add('Name', 'es-demo', {
-      excludeResourceTypes: ['AWS::EC2::Subnet']
+    const privateSubnet2 = ec2.Subnet.fromSubnetAttributes(this, "PrivateSubnet2", {
+      subnetId: props.privateSubnet2Id,
+      availabilityZone: props.privateSubnet2AZ,
+      routeTableId: props.privateSubnet2RouteTableId
     });
 
     // Allow private traffic
     const demoSecurityGroup = new ec2.SecurityGroup(this, 'EsDemoSecGroup', {
       vpc: vpc ,
         allowAllOutbound: true,
-        securityGroupName: 'es-demo-sg'
+        securityGroupName: 'ultrawarm-demo-sg'
     });
 
-    demoSecurityGroup.addIngressRule(ec2.Peer.ipv4(vpc.vpcCidrBlock), ec2.Port.allTraffic());
-    //demoSecurityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.allTraffic()); 
+    // Only allow internal VPC traffic:
+    //demoSecurityGroup.addIngressRule(ec2.Peer.ipv4(vpc.vpcCidrBlock), ec2.Port.allTraffic());
+    
+    // Allow any traffic. Since we (should be) launching this in a private subnet, this should just allow
+    // any internal traffic. You could be more specific / secure by scoping this down to your VPC's CIDR, 
+    // as in the example above. The reason I'm using this approach is because I am accessing my Elasticsearch
+    // VPC from a peered VPC, and rather than complicate this stack by adding more rules (which might not 
+    // be applicable to other people using this demo), I've opted for the approach below:
+    demoSecurityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.allTraffic()); 
     
     const slowSearchLogGroup = new logs.LogGroup(this, 'EsDemoSlowSearchLogGroup', {
-      logGroupName: 'es-demo-slow-search-logs',
+      logGroupName: 'ultrawarm-demo/slow-search-logs',
       retention: logs.RetentionDays.ONE_WEEK,
       removalPolicy: RemovalPolicy.DESTROY
     });
 
     const slowIndexLogGroup = new logs.LogGroup(this, 'EsDemoSlowIndexLogGroup', {
-      logGroupName: 'es-demo-slow-index-logs',
+      logGroupName: 'ultrawarm-demo/slow-index-logs',
       retention: logs.RetentionDays.ONE_WEEK,
       removalPolicy: RemovalPolicy.DESTROY
     });
 
     const appLogGroup = new logs.LogGroup(this, 'EsDemoAppLogGroup', {
-      logGroupName: 'es-demo-app-logs',
+      logGroupName: 'ultrawarm-demo/app-logs',
       retention: logs.RetentionDays.ONE_WEEK,
       removalPolicy: RemovalPolicy.DESTROY
     });
 
-    // The code that defines your stack goes here
+    // Create an elasticsearch cluster
     const prodDomain = new es.Domain(this, 'EsDemoDomain', {
       version: es.ElasticsearchVersion.V7_7,
       domainName: DOMAIN_NAME,
@@ -107,7 +110,10 @@ export class AwsElasticsearchDemoStack extends cdk.Stack {
         securityGroups: [
           demoSecurityGroup
         ],
-        subnets: vpc.privateSubnets      
+        subnets: [
+          privateSubnet1,
+          privateSubnet2
+        ]   
       },
 
       accessPolicies: [                     // Wide-open policy that allows any resource within / connected to our VPC to access the cluster
@@ -123,19 +129,20 @@ export class AwsElasticsearchDemoStack extends cdk.Stack {
       ]
     });
 
-    // Set additional properties not supported by the ES construct: 
+    // To enable UltraWarm, set additional properties not supported by the ES CDK construct: 
     const cfnProdDomain = prodDomain.node.defaultChild as es.CfnDomain;
     cfnProdDomain.addPropertyOverride('ElasticsearchClusterConfig.WarmEnabled', true);
     cfnProdDomain.addPropertyOverride('ElasticsearchClusterConfig.WarmCount', 2);
     cfnProdDomain.addPropertyOverride('ElasticsearchClusterConfig.WarmType', 'ultrawarm1.medium.elasticsearch');
 
+    // This is a CloudTrail log group to which CloudTrail will write API events: 
     const cloudTrailLogGroup = new logs.LogGroup(this, 'EsDemoLogGroup', {
-      logGroupName: 'es-demo-cloudtrail-logs',
+      logGroupName: 'ultrawarm-demo/cloudtrail-logs',
       retention: logs.RetentionDays.ONE_WEEK,
       removalPolicy: RemovalPolicy.DESTROY
     });
 
-    // Create a CloudTrail trail to capture API events. We will stream these to our Elasticsearch domain:
+    // This is the CloudTrail that will log to the log group above:
     const myTrail = new cloudtrail.Trail(this, "EsDemoCloudTrail", {
       sendToCloudWatchLogs: true, 
       isMultiRegionTrail: true,
@@ -143,8 +150,10 @@ export class AwsElasticsearchDemoStack extends cdk.Stack {
       cloudWatchLogGroup: cloudTrailLogGroup
     });
 
-    // Log all S3 object-level events:
-    //myTrail.logAllS3DataEvents();       // This can get expensive if you have a lot of S3 activity. Disabling, for now...
+    // Just to give us more sample data, we will also log all S3 object-level events.
+    // NOTE - this can be expensive if you have a lot of S3 traffic... not recommended for 
+    // production or if you have heavy S3 traffic:
+    myTrail.logAllS3DataEvents();       
 
     // Create a Lambda function that will receive CloudTrail logs from a CloudWatch logs group subscription and write to Elasticsearch:
     const lambdaFunction = new lambda.Function(this, 'EsDemoWriteCloudTrailToIndex', {
@@ -159,12 +168,18 @@ export class AwsElasticsearchDemoStack extends cdk.Stack {
         ES_DOC_TYPE: 'cloudtrail'
       },
       vpc: vpc,
-      vpcSubnets: vpc.selectSubnets({subnetType: ec2.SubnetType.PRIVATE}),
+      vpcSubnets: vpc.selectSubnets({
+        subnets: [
+          privateSubnet1,
+          privateSubnet2
+        ]
+      }),
       securityGroups: [
         demoSecurityGroup
       ]
     });
 
+    // Send all logs from our log group to our Lambda:
     new logs.SubscriptionFilter(this, 'LambdaLogSubscription', {
       logGroup: cloudTrailLogGroup, 
       destination: new logDestinations.LambdaDestination(lambdaFunction),
