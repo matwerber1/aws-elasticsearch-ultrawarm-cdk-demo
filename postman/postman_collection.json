@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "cd331bd9-5f40-4a77-898f-47d584bab0ea",
+		"_postman_id": "e42a2634-18dc-455b-bf0b-e100c9938c86",
 		"name": "ElasticSearch",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -232,7 +232,6 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "9e8baba5-506d-498c-8171-6c51641db787",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -242,15 +241,13 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "aa672fcd-8a44-4751-9641-2460836954b3",
 						"type": "text/javascript",
 						"exec": [
 							""
 						]
 					}
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "CloudTrail Demo APIs",
@@ -316,7 +313,6 @@
 				{
 					"listen": "prerequest",
 					"script": {
-						"id": "fddc99af-f5a4-42d0-8950-b54d7d70c532",
 						"type": "text/javascript",
 						"exec": [
 							""
@@ -326,15 +322,13 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "adf4a0e7-6c2e-4541-8de2-c563eb636683",
 						"type": "text/javascript",
 						"exec": [
 							""
 						]
 					}
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		},
 		{
 			"name": "Simple Demo APIs",
@@ -420,14 +414,14 @@
 							}
 						],
 						"url": {
-							"raw": "{{endpoint}}/_cat/indices/_warm?v",
+							"raw": "{{endpoint}}/_cat/indices/_hot?v",
 							"host": [
 								"{{endpoint}}"
 							],
 							"path": [
 								"_cat",
 								"indices",
-								"_warm"
+								"_hot"
 							],
 							"query": [
 								{
@@ -618,15 +612,13 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": {}
+			]
 		}
 	],
 	"event": [
 		{
 			"listen": "prerequest",
 			"script": {
-				"id": "bacf0ec0-fc0d-4a21-9233-d44e422ad643",
 				"type": "text/javascript",
 				"exec": [
 					""
@@ -636,7 +628,6 @@
 		{
 			"listen": "test",
 			"script": {
-				"id": "a3fd072b-6d3b-407a-8daa-6a5203a6d401",
 				"type": "text/javascript",
 				"exec": [
 					""
@@ -646,10 +637,8 @@
 	],
 	"variable": [
 		{
-			"id": "759b8529-6c9e-40ed-aece-1dfc775225df",
 			"key": "endpoint",
 			"value": "https://vpc-es-demo-obt4ctvmepzixoukwin4hrrjoq.us-west-2.es.amazonaws.com"
 		}
-	],
-	"protocolProfileBehavior": {}
+	]
 }
