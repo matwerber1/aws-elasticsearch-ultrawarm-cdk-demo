@@ -16,3 +16,6 @@ lib/lambda/write-cloudtrail-to-es/*
 !lib/lambda/write-cloudtrail-to-es/.python-version
 
 **copy**
+
+
+.DS_Store
