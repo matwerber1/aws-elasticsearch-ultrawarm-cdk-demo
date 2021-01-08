@@ -68,7 +68,7 @@ If you choose to use your own, existing VPC, then security will be governed base
 
 The file `postman/postman_collection.json` is an importable collection of [Postman](https://www.postman.com/) queries that you can use to test your Elasticsearch cluster.
 
-You don't need to use Postman, but it makes things easier. As an alternative, you could always execute the API commands directly from Kibana, an EC2 or Cloud9 instance, etc... but I'll assume you're using Postman.
+You don't need to use Postman, but it makes things easier. As an alternative, you could always execute the API commands directly from Kibana (see the **Demo APIs with Kibana** section of this document).
 
 ## Postman Setup
 
@@ -127,3 +127,184 @@ High level, you will:
 7. Run the "Search for document" API once more. Now, you should see that the retrieval time is much lower, roughly the same performance as when the index was in hot storage. This is because your initial slower query pulled the data into UltraWarm and it is now cached by the UltraWarm node. Subsequent calls do not need to query S3 until the item expires from the cache. 
 
 8. Additional APIs also allow you to migrate the index back to hot storage or delete the index to start from the beginning. 
+
+## Demo APIs with Kibana
+
+You can run the following queries from the Kibana dev console.
+
+### Show all indices
+
+```
+GET /_cat/indices/?v
+```
+
+![](images/kibana-show-all-indices.png)
+
+Optionally, filter only for hot or warm indices:
+
+```
+GET /_cat/indices/_hot?v
+GET /_cat/indices/_warm?v
+```
+
+### Get shard allocation
+
+```
+GET /_cat/allocation?v
+```
+
+![](images/kibana-get-shard-allocation.png)
+
+### PUT simple index template
+
+This is an example of creating a template that will be applied to any newly-created indices whose name matches the pattern `simple_index*` and sets the index's primary shard count to 1 and replica count to 0:
+
+```
+PUT _template/simple_index_template
+{
+  "index_patterns": [
+    "simple_index*"
+  ],
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+  }
+}
+```
+
+### GET list of existing index templates
+
+```
+GET _cat/templates/*?v
+```
+
+### PUT an index policy to automatically lifecyle indexes to warm storage
+
+Index policies can be used to automate index lifecycles. The example below creates a policy that will move an index from hot to warm after 25 hours, and will delete an index after 30 days. 
+
+Once a policy exist, it does not take effect until you manually apply it to an existing index. Alternatively, you can specify within an index template which index policy (if any) should be attached. An example will be shown in the next section.
+
+```
+PUT /_opendistro/_ism/policies/hot_to_warm_policy
+{
+    "policy": {
+        "description": "Demonstrate a hot-warm-delete workflow.",
+        "schema_version": 1,
+        "error_notification": null,
+        "default_state": "hot",
+        "states": [
+            {
+                "name": "hot",
+                "actions": [],
+                "transitions": [
+                    {
+                        "state_name": "warm",
+                        "conditions": {
+                            "min_index_age": "25h"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "warm",
+                "actions": [
+                    {
+                        "timeout": "24h",
+                        "retry": {
+                            "count": 5,
+                            "backoff": "exponential",
+                            "delay": "1h"
+                        },
+                        "warm_migration": {}
+                    }
+                ],
+                "transitions": [
+                    {
+                        "state_name": "delete",
+                        "conditions": {
+                            "min_index_age": "30d"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "delete",
+                "actions": [
+                    {
+                        "delete": {}
+                    }
+                ],
+                "transitions": []
+            }
+        ]
+    }
+}
+```
+
+## PUT index template which also specifies an index policy
+
+The example below is the same index template we created previously, except now it also specifies that any newly-created index matching the title `simple_index*` should also have the `hot_to_warm` index policy (created above) attached to it: 
+
+```
+PUT _template/simple_index_template
+{
+  "index_patterns": [
+    "simple_index*"
+  ],
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+     "opendistro.index_state_management.policy_id": "hot_to_warm_policy"
+  }
+}
+```
+
+### POST sample sensor data to a simple index
+
+This posts mock sensor data to an index. If you previously created the demo index template above, the newly-created index below will be assigned to the template based on its name and receive one primary shard and zero replica shards (instead of the default of 5 primary and 1 replica):
+
+```
+POST simple_index/_doc
+{
+    "sensorId": 40,
+    "timestamp": "2020-07-24T09:44:49+03:00",
+    "currentTemperature": 30,
+    "status": "WARN"
+}
+```
+
+### GET (search) for our newly-created sensor data
+
+When first running this API, pay attention to the response time. Since this index is initially a hot index, response time should be very low, e.g. ~40ms. 
+
+Later, once you've transitioned the index to warm storage, re-run this query. The very first time you run it, the item will be pulled from S3 and response time will be longer (e.g. 250ms). Then, if you subsequently re-run the query, you will see much faster response times (comparable to hot data nodes) because the item is cached on the UltraWarm node.
+
+```
+GET /simple_index/_search?q=sensorId:40
+```
+
+### POST (move) your index to UltraWarm
+
+```
+POST /_ultrawarm/migration/simple_index/_warm
+```
+
+### GET migration status of index to/from warm storage
+
+Note - because our index is so small, its likely that the index will complete before you have a chance to run this API. In production, larger index migrations to/from warm storage will take longer: 
+
+```
+GET /_ultrawarm/migration/_status?v
+```
+
+### POST (move) simple index back from warm to hot storage
+
+```
+POST /_ultrawarm/migration/simple_index/_hot
+```
+
+### DELETE our simple index
+
+```
+DELETE /simple_index
+```
